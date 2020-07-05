@@ -13,15 +13,15 @@ to have your new fields displayed.  Curlines dictates how many fields you would 
 
  ex.   //curt add Snowdim 
 
-		  Returns that this matched multiple results
+Returns that this matched multiple results
 		 
  ex.   //curt add Snowdim 2
 
-                  Will add just one item.
+Will add just one item.
 
  ex.   //curt add Snowdim *
 
-		  Adds multiple entries matching Snowdim
+Adds multiple entries matching Snowdim
 
  ** Version History **
  
