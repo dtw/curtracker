@@ -75,7 +75,6 @@ cur_box = function()
   if not cur2packet['Coalition Imprimaturs'] then return end
   curlinecnt = 0
   for v in settings.curfields:it() do
-	print('V: ',v)
     if v ~= '' then
       if curlinecnt >= settings.curlines then
         str = str..'\n'
