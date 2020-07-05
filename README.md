@@ -15,6 +15,8 @@ to have your new fields displayed.  Curlines dictates how many fields you would 
 		  Adds multiple entries matching Snowdim
 
  ** Version History **
+ 
+ 
 v1.0 - Rewrote the saving and loading of currency types to just use whatever is found
        in the packets library so no updates are needed.
        
