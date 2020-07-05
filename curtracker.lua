@@ -6,6 +6,10 @@
 --  //curt on|off
 --  //curt add <search term>
 --  //curt del <search term>
+--  //curt field_color <red> <green> <blue>
+--  //curt value_color <red> <green> <blue>
+--  //curt size <text size>
+--  //curt alpha <background transparency> 0-255
 --
 -- ex.   //curt add Snowdim 
 --		  Returns that this matched multiple results
@@ -26,7 +30,7 @@
 _addon.author = 'Erupt'
 _addon.commands = {'curtracker','curt'}
 _addon.name = 'CurTracker'
-_addon.version = '1.0'
+_addon.version = '1.0.070520'
 
 require('logger')
 require('tables')
@@ -54,24 +58,38 @@ end
 
 default = {
   text = {
-    pos = {}
+	size = 10,
   },
   curtracking = true,
   curlines = 2,
   curfields = S{},
+  field_color = {
+	red = 0,
+	green = 255,
+	blue = 255,
+  },
+  value_color = {
+	red = 255,
+	green = 255,
+	blue = 255,
+  },
 }
-default.text.pos.x = 100
-default.text.pos.y = 300
 
 settings = {}
+
+if windower.ffxi.get_info().logged_in then
+	settings = config.load(default)
+end
+
 
 cur1packet = {}
 cur2packet = {}
 cursearches = {}
 curpackettype = 0
+thread_name = ''
 
 cur_box = function()
-  local str = ''
+  local str = '[\\cs(255,215,0)Currency Tracker\\cr]:\\cs(200,200,200):.\\cr\\cs(150,150,150)..\\cr\\cs(50,50,50). .\\cr \\cs(10,10,10).\\cr\n'
   if not cur2packet['Coalition Imprimaturs'] then return end
   curlinecnt = 0
   for v in settings.curfields:it() do
@@ -82,10 +100,10 @@ cur_box = function()
       end
 	  v = curfields[v:lower()]
       if not cur1packet[v] then
-        str = str..v..': '..cur2packet[v]..' '
+        str = str..'[\\cs('..settings.field_color.red..','..settings.field_color.green..','..settings.field_color.blue..')'..v..'\\cr] = \\cs('..settings.value_color.red..','..settings.value_color.green..','..settings.value_color.blue..')'..cur2packet[v]..' \\cr'
         curlinecnt = curlinecnt+1
       else
-        str = str..v..': '..cur1packet[v]..' '
+        str = str..'[\\cs('..settings.field_color.red..','..settings.field_color.green..','..settings.field_color.blue..')'..v..'\\cr] = \\cs('..settings.value_color.red..','..settings.value_color.green..','..settings.value_color.blue..')'..cur1packet[v]..' \\cr'
         curlinecnt = curlinecnt+1
       end
     end
@@ -93,6 +111,8 @@ cur_box = function()
   curpackettype = 0
   return str
 end
+
+cur_trackbox = texts.new(settings)
 
 search_data = {}
 
@@ -110,40 +130,76 @@ function search_curs(curs)
   return search_cnt
 end
 
-cur_trackbox = texts.new(settings.text,settings)
-
 function addon_message(str)
   windower.add_to_chat(207, _addon.name..': '..str)
 end
 
-function cur_command(...)
-  local commands = {...}
-  if commands[1] then
-    commands[1] = commands[1]:lower()
-    if #commands>2 then
-      cnt = 3
-      while cnt <= #commands do
-        if commands[cnt] ~= "*" then commands[2] = commands[2]..' '..commands[cnt] end
-        cnt = cnt+1
-      end
-    end
+function cur_command(cmd,...)
+  if not cmd then --do help when I stop being lazy
+	return
+  else
+	cmd = cmd:lower()
   end
-  if commands[1] == "on" then
+  local commands = T{...}
+  local commands_joined = string.gsub(table.concat(commands," "),'*','')
+  if cmd == "on" then
     addon_message('Set to on')
     settings.curtracking = true
     send_request()
     return
-  elseif commands[1] == "off" then
+  elseif cmd == "off" then
     addon_message('Set to off')
     settings.curtracking = false
     cur_trackbox:hide()
     return
-  elseif commands[1] == "add" then
-    if not commands[2] then
+  elseif cmd == 'alpha' then
+    if not commands[1] then
+  	  log('Missing Alpha Number')
+	  return
+	end
+	settings.bg_alpha = tonumber(commands[1])
+	texts.bg_alpha(cur_trackbox,settings.bg_alpha)
+	config.save(settings)
+    cur_trackbox:text(cur_box())
+    cur_trackbox:show()
+  elseif cmd == 'size' then
+    if not commands[1] then
+  	  log('Missing Text Size Number')
+	  return
+	end
+	settings.text.size = tonumber(commands[1])
+	texts.size(cur_trackbox,settings.text.size)
+	config.save(settings)
+    cur_trackbox:text(cur_box())
+    cur_trackbox:show()
+  elseif cmd == 'value_color' then
+    if #commands < 3 then
+  	  log('Missing a Color')
+	  return
+	end
+	settings.value_color.red = tonumber(commands[1])
+	settings.value_color.green = tonumber(commands[2])
+	settings.value_color.blue = tonumber(commands[3])
+	config.save(settings)
+    cur_trackbox:text(cur_box())
+    cur_trackbox:show()
+  elseif cmd == 'field_color' then
+    if #commands < 3 then
+  	  log('Missing a Color')
+	  return
+	end
+	settings.field_color.red = tonumber(commands[1])
+	settings.field_color.green = tonumber(commands[2])
+	settings.field_color.blue = tonumber(commands[3])
+	config.save(settings)
+    cur_trackbox:text(cur_box())
+    cur_trackbox:show()
+  elseif cmd == "add" then
+    if not commands[1] then
       addon_message(' Usage: //curt add Currency Name')
       return
     end
-    local search_result = search_curs(commands[2])
+    local search_result = search_curs(commands_joined)
     if search_result>0 then
       if search_result == 1 then
 		if settings.curfields:contains(search_data[1]) then
@@ -181,12 +237,12 @@ function cur_command(...)
       addon_message('Did not match any known currencies')
       return
     end
-  elseif commands[1] == 'del' then
-      if not commands[2] then
+  elseif cmd == 'del' then
+      if not commands[1] then
       addon_message(' Usage: //curt del Currency Name')
       return
     end
-    local search_result = search_curs(commands[2])
+    local search_result = search_curs(commands_joined)
     if search_result>0 then
       if search_result == 1 then
         addon_message('Deleting: '..search_data[1])		
@@ -236,7 +292,10 @@ function check_incoming_chunk(id,original,modified,injected,blocked)
   if curpackettype == 2 then
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
-    coroutine.schedule(send_request,60)
+	if thread_name ~= '' and coroutine.status(thread_name) then
+		coroutine.close(thread_name)
+	end
+    thread_name = coroutine.schedule(send_request,60)
   end
 end
 
@@ -279,7 +338,8 @@ end)
 
 windower.register_event('load', function()
 	if windower.ffxi.get_info().logged_in then
-		settings = config.load(default)
+		print('Running Loaded')
+		settings = config.load(default)		
 		send_request()
 	end
 end)
