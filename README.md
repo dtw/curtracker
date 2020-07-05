@@ -1,5 +1,8 @@
 Currency Tracker
 
+This was the first ffxi lua I wrote years ago, decided to do a small update to it and release it.
+I'll add some more options later to bring it up to current standards.
+
 After you load the lua for the first time just edit the settings.xml from /data and reload the lua 
 to have your new fields displayed.  Curlines dictates how many fields you would like per line on your box.
 
