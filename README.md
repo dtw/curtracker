@@ -10,6 +10,10 @@ to have your new fields displayed.  Curlines dictates how many fields you would 
   	//curt on|off
 	//curt add <search term>
   	//curt del <search term>
+    //curt field_color <red> <green> <blue>
+    //curt value_color <red> <green> <blue>
+    //curt size <text size>
+    //curt alpha <background transparency> 0-255
 
  ex.   //curt add Snowdim 
 
