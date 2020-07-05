@@ -338,7 +338,6 @@ end)
 
 windower.register_event('load', function()
 	if windower.ffxi.get_info().logged_in then
-		print('Running Loaded')
 		settings = config.load(default)		
 		send_request()
 	end
