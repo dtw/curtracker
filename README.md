@@ -12,9 +12,15 @@ to have your new fields displayed.  Curlines dictates how many fields you would 
   	//curt del <search term>
 
  ex.   //curt add Snowdim 
+
 		  Returns that this matched multiple results
-		 //curt add Snowdim 2
+		 
+ ex.   //curt add Snowdim 2
+
+                  Will add just one item.
+
  ex.   //curt add Snowdim *
+
 		  Adds multiple entries matching Snowdim
 
  ** Version History **
