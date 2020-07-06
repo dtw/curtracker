@@ -144,8 +144,12 @@ function cur_command(cmd,...)
   local commands_joined = string.gsub(table.concat(commands," "),'*','')
   if cmd == "on" then
     addon_message('Set to on')
-    settings.curtracking = true
-    send_request()
+	if not settings.curtracking then
+		settings.curtracking = true
+		send_request()
+	else
+		addon_message('Already Enabled')
+	end
     return
   elseif cmd == "off" then
     addon_message('Set to off')
@@ -292,9 +296,6 @@ function check_incoming_chunk(id,original,modified,injected,blocked)
   if curpackettype == 2 then
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
-	if thread_name ~= '' and coroutine.status(thread_name) then
-		coroutine.close(thread_name)
-	end
     thread_name = coroutine.schedule(send_request,60)
   end
 end
@@ -332,7 +333,9 @@ outgoing_chunk = windower.register_event('outgoing chunk', check_outgoing_chunk)
 windower.register_event('login', function()
 	if windower.ffxi.get_info().logged_in then
 		settings = config.load(default)
-		send_request()
+		if thread_name ~= '' then
+			send_request()
+		end
 	end
 end)
 
