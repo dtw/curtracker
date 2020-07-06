@@ -30,7 +30,7 @@
 _addon.author = 'Erupt'
 _addon.commands = {'curtracker','curt'}
 _addon.name = 'CurTracker'
-_addon.version = '1.0.070520'
+_addon.version = '1.0.070520.2'
 
 require('logger')
 require('tables')
