@@ -9,6 +9,7 @@
 --  //curt field_color <red> <green> <blue>
 --  //curt value_color <red> <green> <blue>
 --  //curt size <text size>
+--  //curt refresh <Seconds to refresh currencies>
 --  //curt alpha <background transparency> 0-255
 --
 -- ex.   //curt add Snowdim 
@@ -30,7 +31,7 @@
 _addon.author = 'Erupt'
 _addon.commands = {'curtracker','curt'}
 _addon.name = 'CurTracker'
-_addon.version = '1.0.070520'
+_addon.version = '1.0.070720'
 
 require('logger')
 require('tables')
@@ -62,6 +63,7 @@ default = {
   },
   curtracking = true,
   curlines = 2,
+  currefresh = 60,
   curfields = S{},
   field_color = {
 	red = 0,
@@ -156,6 +158,14 @@ function cur_command(cmd,...)
     settings.curtracking = false
     cur_trackbox:hide()
     return
+  elseif cmd == 'refresh' then
+    if not commands[1] then
+  	  log('Missing Refresh Number')
+	  return
+	end
+	settings.currefresh = tonumber(commands[1])
+	log('Changed Refresh time to '..settings.currefresh..'s')
+	config.save(settings, windower.ffxi.get_player().name)
   elseif cmd == 'alpha' then
     if not commands[1] then
   	  log('Missing Alpha Number')
@@ -163,7 +173,7 @@ function cur_command(cmd,...)
 	end
 	settings.bg_alpha = tonumber(commands[1])
 	texts.bg_alpha(cur_trackbox,settings.bg_alpha)
-	config.save(settings)
+	config.save(settings, windower.ffxi.get_player().name)
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
   elseif cmd == 'size' then
@@ -173,7 +183,7 @@ function cur_command(cmd,...)
 	end
 	settings.text.size = tonumber(commands[1])
 	texts.size(cur_trackbox,settings.text.size)
-	config.save(settings)
+	config.save(settings, windower.ffxi.get_player().name)
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
   elseif cmd == 'value_color' then
@@ -184,7 +194,7 @@ function cur_command(cmd,...)
 	settings.value_color.red = tonumber(commands[1])
 	settings.value_color.green = tonumber(commands[2])
 	settings.value_color.blue = tonumber(commands[3])
-	config.save(settings)
+	config.save(settings, windower.ffxi.get_player().name)
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
   elseif cmd == 'field_color' then
@@ -195,7 +205,7 @@ function cur_command(cmd,...)
 	settings.field_color.red = tonumber(commands[1])
 	settings.field_color.green = tonumber(commands[2])
 	settings.field_color.blue = tonumber(commands[3])
-	config.save(settings)
+	config.save(settings, windower.ffxi.get_player().name)
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
   elseif cmd == "add" then
@@ -212,7 +222,7 @@ function cur_command(cmd,...)
 		end	
         addon_message('Adding: '..search_data[1])	
         settings.curfields:add(search_data[1]:lower())
-        config.save(settings)
+        config.save(settings, windower.ffxi.get_player().name)
         return
       elseif search_result > 1 then
         if search_result > 5 then
@@ -229,7 +239,7 @@ function cur_command(cmd,...)
             settings.curfields:add(v:lower())
           end
           addon_message(' Added: '..results)
-          config.save(settings)
+          config.save(settings, windower.ffxi.get_player().name)
           return
         else 
           addon_message('Multiple Results: '..results)
@@ -251,7 +261,7 @@ function cur_command(cmd,...)
       if search_result == 1 then
         addon_message('Deleting: '..search_data[1])		
         settings.curfields:remove(search_data[1]:lower())
-        config.save(settings)
+        config.save(settings, windower.ffxi.get_player().name)
         return
       elseif search_result > 1 then
         if search_result > 5 then
@@ -268,7 +278,7 @@ function cur_command(cmd,...)
             settings.curfields:remove(v:lower())
           end
           addon_message(' Deleted: '..results)
-          config.save(settings)
+          config.save(settings, windower.ffxi.get_player().name)
           return
         else 
           addon_message('Multiple Results: '..results)
@@ -296,7 +306,7 @@ function check_incoming_chunk(id,original,modified,injected,blocked)
   if curpackettype == 2 then
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
-    thread_name = coroutine.schedule(send_request,60)
+    thread_name = coroutine.schedule(send_request,settings.currefresh)
   end
 end
 

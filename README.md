@@ -13,6 +13,7 @@ to have your new fields displayed.  Curlines dictates how many fields you would 
     //curt field_color <red> <green> <blue>
     //curt value_color <red> <green> <blue>
     //curt size <text size>
+    //curt refresh <Seconds to refresh currencies>
     //curt alpha <background transparency> 0-255
 
  ex.   //curt add Snowdim 
