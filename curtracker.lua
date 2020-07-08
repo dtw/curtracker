@@ -33,6 +33,7 @@ _addon.commands = {'curtracker','curt'}
 _addon.name = 'CurTracker'
 _addon.version = '1.0.070720'
 
+
 require('logger')
 require('tables')
 require('sets')
