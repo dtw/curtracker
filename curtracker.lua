@@ -19,6 +19,7 @@
 --		  Adds multiple entries matching Snowdim
 --
 -- ** Version History **
+--	v1.1 - Fixed some issues with character specific settings.
 --	v1.0 - Rewrote the saving and loading of currency types to just use whatever is found
 --         in the packets library so no updates are needed.
 --  v0.4 - Add commands to disable refresh, search and change fields from addon command
@@ -31,8 +32,7 @@
 _addon.author = 'Erupt'
 _addon.commands = {'curtracker','curt'}
 _addon.name = 'CurTracker'
-_addon.version = '1.0.070720'
-
+_addon.version = '1.1.072220'
 
 require('logger')
 require('tables')
@@ -80,16 +80,12 @@ default = {
 
 settings = {}
 
-if windower.ffxi.get_info().logged_in then
-	settings = config.load(default)
-end
-
-
 cur1packet = {}
 cur2packet = {}
 cursearches = {}
 curpackettype = 0
 thread_name = ''
+last_player = ''
 
 cur_box = function()
   local str = '[\\cs(255,215,0)Currency Tracker\\cr]:\\cs(200,200,200):.\\cr\\cs(150,150,150)..\\cr\\cs(50,50,50). .\\cr \\cs(10,10,10).\\cr\n'
@@ -295,7 +291,7 @@ function cur_command(cmd,...)
 end
 
 function check_incoming_chunk(id,original,modified,injected,blocked)
-  if settings.curtracker == false then return end
+  if settings.curtracking == false then return end
   if id == 0x118 then
     cur2packet = packets.parse('incoming', original)
   end
@@ -307,7 +303,7 @@ function check_incoming_chunk(id,original,modified,injected,blocked)
   if curpackettype == 2 then
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
-    thread_name = coroutine.schedule(send_request,settings.currefresh)
+    thread_name = coroutine.schedule(send_request,settings.currefresh or 120)
   end
 end
 
@@ -343,17 +339,25 @@ outgoing_chunk = windower.register_event('outgoing chunk', check_outgoing_chunk)
 
 windower.register_event('login', function()
 	if windower.ffxi.get_info().logged_in then
-		settings = config.load(default)
-		if thread_name ~= '' then
-			send_request()
+		last_player = windower.ffxi.get_player().name
+		settings = config.load(default,last_player)
+		if thread_name == '' then
+			coroutine.schedule(send_request,60)
 		end
 	end
 end)
 
+windower.register_event('logout', function()
+	config.save(settings,last_player)
+	thread_name = ''
+	settings.curtracker = false
+end)
+
 windower.register_event('load', function()
 	if windower.ffxi.get_info().logged_in then
-		settings = config.load(default)		
-		send_request()
+		last_player = windower.ffxi.get_player().name
+		settings = config.load(default,last_player)
+		coroutine.schedule(send_request,60)
 	end
 end)
 
