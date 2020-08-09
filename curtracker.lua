@@ -11,6 +11,9 @@
 --  //curt size <text size>
 --  //curt refresh <Seconds to refresh currencies>
 --  //curt alpha <background transparency> 0-255
+--  //curt profile <Add Profile>
+--  Profiles will add multiple fields at once.  Refer to the profiles.lua file
+--  to view options.
 --
 -- ex.   //curt add Snowdim 
 --		  Returns that this matched multiple results
@@ -19,6 +22,7 @@
 --		  Adds multiple entries matching Snowdim
 --
 -- ** Version History **
+--	v1.3 - Added profiles
 --  v1.2 - Again changed how config saves to avoid conflicts with alts.
 --	v1.1 - Fixed some issues with character specific settings.
 --	v1.0 - Rewrote the saving and loading of currency types to just use whatever is found
@@ -43,6 +47,7 @@ texts = require('texts')
 config = require('config')
 res = require('resources')
 packets = require('packets')
+profiles = require('profiles')
 
 
 
@@ -136,7 +141,7 @@ function search_curs(curs)
   return search_cnt
 end
 
-function addon_message(str)
+function log(str)
   windower.add_to_chat(207, _addon.name..': '..str)
 end
 
@@ -149,16 +154,16 @@ function cur_command(cmd,...)
   local commands = T{...}
   local commands_joined = string.gsub(table.concat(commands," "),'*','')
   if cmd == "on" then
-    addon_message('Set to on')
+    log('Set to on')
 	if not settings.curtracking then
 		settings.curtracking = true
 		send_request()
 	else
-		addon_message('Already Enabled')
+		log('Already Enabled')
 	end
     return
   elseif cmd == "off" then
-    addon_message('Set to off')
+    log('Set to off')
     settings.curtracking = false
     cur_trackbox:hide()
     return
@@ -212,9 +217,30 @@ function cur_command(cmd,...)
 	config.save(settings,'all')
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
+  elseif cmd == 'profile' then
+    if not commands[1] then
+      log(' Usage: //curt profile Profile_Name')
+	  log(' Options: '..string.sub(table.concat(profiles:keyset(),','),1,-2))
+      return
+    end
+	if profiles[commands[1]] then
+		settings.curfields = S{}
+		for v in profiles[commands[1]]:it() do
+			settings.curfields:add(v:lower())
+		end
+		log('Set to: '..string.sub(table.concat(profiles[commands[1]],','),1,-2))
+		config.save(settings,'all')
+		cur_trackbox:text(cur_box())
+		cur_trackbox:show()
+		return
+	else
+		log(commands[1]..' Not a valid option')
+		log(' Options: '..string.sub(table.concat(profiles:keyset(),','),1,-2))
+		return
+	end
   elseif cmd == "add" then
     if not commands[1] then
-      addon_message(' Usage: //curt add Currency Name')
+      log(' Usage: //curt add Currency Name')
       return
     end
     local search_result = search_curs(commands_joined)
@@ -224,13 +250,13 @@ function cur_command(cmd,...)
 			log(search_data[1]..' Already added to tracker')
 			return
 		end	
-        addon_message('Adding: '..search_data[1])	
+        log('Adding: '..search_data[1])	
         settings.curfields:add(search_data[1]:lower())
         config.save(settings,'all')
         return
       elseif search_result > 1 then
         if search_result > 5 then
-          addon_message(' Too many results matched your pattern, narrow it down')
+          log(' Too many results matched your pattern, narrow it down')
           return
         end
         local results = ''
@@ -242,34 +268,34 @@ function cur_command(cmd,...)
           for k,v in pairs(search_data) do
             settings.curfields:add(v:lower())
           end
-          addon_message(' Added: '..results)
+          log(' Added: '..results)
           config.save(settings,'all')
           return
         else 
-          addon_message('Multiple Results: '..results)
-          addon_message('** To add all these results append search with "*"')
+          log('Multiple Results: '..results)
+          log('** To add all these results append search with "*"')
           return
         end
       end
     else
-      addon_message('Did not match any known currencies')
+      log('Did not match any known currencies')
       return
     end
   elseif cmd == 'del' then
       if not commands[1] then
-      addon_message(' Usage: //curt del Currency Name')
+      log(' Usage: //curt del Currency Name')
       return
     end
     local search_result = search_curs(commands_joined)
     if search_result>0 then
       if search_result == 1 then
-        addon_message('Deleting: '..search_data[1])		
+        log('Deleting: '..search_data[1])		
         settings.curfields:remove(search_data[1]:lower())
         config.save(settings,'all')
         return
       elseif search_result > 1 then
         if search_result > 5 then
-          addon_message(' Too many results matched your pattern, narrow it down')
+          log(' Too many results matched your pattern, narrow it down')
           return
         end
         local results = ''
@@ -281,17 +307,17 @@ function cur_command(cmd,...)
           for k,v in pairs(search_data) do
             settings.curfields:remove(v:lower())
           end
-          addon_message(' Deleted: '..results)
+          log(' Deleted: '..results)
           config.save(settings,'all')
           return
         else 
-          addon_message('Multiple Results: '..results)
-          addon_message('** To delete all these results append search with "*"')
+          log('Multiple Results: '..results)
+          log('** To delete all these results append search with "*"')
           return
         end
       end
     else
-      addon_message('Did not match any known currencies')
+      log('Did not match any known currencies')
       return
 	end
   end
