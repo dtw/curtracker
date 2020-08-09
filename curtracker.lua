@@ -33,7 +33,7 @@
 _addon.author = 'Erupt'
 _addon.commands = {'curtracker','curt'}
 _addon.name = 'CurTracker'
-_addon.version = '1.1.072520'
+_addon.version = '1.3.080920'
 
 require('logger')
 require('tables')
@@ -360,9 +360,9 @@ windower.register_event('login', function()
 end)
 
 windower.register_event('logout', function()
-	config.save(settings,last_player)
-	thread_name = ''
-	settings.curtracker = false
+	config.save(settings)
+	settings.curtracking = false
+	send_command('lua r curtracker')
 end)
 
 windower.register_event('load', function()
