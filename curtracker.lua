@@ -38,6 +38,7 @@ _addon.version = '1.1.072520'
 require('logger')
 require('tables')
 require('sets')
+files = require('files')
 texts = require('texts')
 config = require('config')
 res = require('resources')
@@ -63,10 +64,6 @@ default = {
   text = {
 	size = 10,
   },
-  pos = {
-	x = 0,
-	y = 0,
-  },
   curtracking = true,
   curlines = 2,
   currefresh = 60,
@@ -81,9 +78,13 @@ default = {
 	green = 255,
 	blue = 255,
   },
+  pos = {
+	x = 0,
+	y = 0,
+  }
 }
 
-settings = {}
+settings = config.load(default)
 
 cur1packet = {}
 cur2packet = {}
@@ -117,6 +118,7 @@ cur_box = function()
 end
 
 cur_trackbox = texts.new(settings)
+
 
 search_data = {}
 
@@ -308,6 +310,10 @@ function check_incoming_chunk(id,original,modified,injected,blocked)
   if curpackettype == 2 then
     cur_trackbox:text(cur_box())
     cur_trackbox:show()
+	pos_x,pos_y = texts.pos(cur_trackbox)
+	settings.pos.x = pos_x
+	settings.pos.y = pos_y
+	config.save(settings)
     thread_name = coroutine.schedule(send_request,settings.currefresh or 120)
   end
 end
@@ -346,6 +352,7 @@ windower.register_event('login', function()
 	if windower.ffxi.get_info().logged_in then
 		last_player = windower.ffxi.get_player().name
 		settings = config.load('data/'..last_player..'.xml',default)
+		cur_trackbox:pos(settings.pos.x,settings.pos.y)
 		if thread_name == '' then
 			coroutine.schedule(send_request,60)
 		end
@@ -362,6 +369,7 @@ windower.register_event('load', function()
 	if windower.ffxi.get_info().logged_in then
 		last_player = windower.ffxi.get_player().name
 		settings = config.load('data/'..last_player..'.xml',default)
+		cur_trackbox:pos(settings.pos.x,settings.pos.y)
 		coroutine.schedule(send_request,60)
 	end
 end)
