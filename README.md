@@ -12,6 +12,10 @@ to have your new fields displayed.  Curlines dictates how many fields you would 
   //curt size <text size>
   //curt refresh <Seconds to refresh currencies>
   //curt alpha <background transparency> 0-255
+  //curt profile <Add Profile>
+  Profiles will add multiple fields at once.  Refer to the profiles.lua file
+  to view options.
+
 
  ex.   //curt add Snowdim 
 		  Returns that this matched multiple results
