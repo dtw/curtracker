@@ -4,6 +4,7 @@ After you load the lua for the first time just edit the settings.xml from /data 
 to have your new fields displayed.  Curlines dictates how many fields you would like per line on your box.
 
  ** Commands **
+
   //curt on|off
 
   //curt add <search term>
