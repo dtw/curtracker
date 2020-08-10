@@ -5,14 +5,23 @@ to have your new fields displayed.  Curlines dictates how many fields you would 
 
  ** Commands **
   //curt on|off
+
   //curt add <search term>
+
   //curt del <search term>
+
   //curt field_color <red> <green> <blue>
+
   //curt value_color <red> <green> <blue>
+
   //curt size <text size>
+
   //curt refresh <Seconds to refresh currencies>
+
   //curt alpha <background transparency> 0-255
+
   //curt profile <Add Profile>
+
   Profiles will add multiple fields at once.  Refer to the profiles.lua file
   to view options.
 
