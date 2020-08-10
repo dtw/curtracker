@@ -24,6 +24,7 @@ to have your new fields displayed.  Curlines dictates how many fields you would 
 		  Adds multiple entries matching Snowdim
 
  ** Version History **
+
 V1.3 - Added profiles.
 
 v1.2 - Again changed how config saves to avoid conflicts with alts.
